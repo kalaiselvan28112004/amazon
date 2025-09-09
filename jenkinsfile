@@ -1,0 +1,18 @@
+<<'JENKINS'
+pipeline {
+  agent any
+  stages {
+    stage('Checkout') {
+      steps { checkout scm }
+    }
+    stage('Deploy') {
+      steps {
+        sh '''
+          rm -rf /var/jenkins_site/*
+          tar --exclude='.git' -cf - . | tar -C /var/jenkins_site -xf -
+        '''
+      }
+    }
+  }
+}
+JENKINS
