@@ -1,0 +1,45 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Clone repo') {
+            steps {
+                git 'https://github.com/kalaiselvan28112004/amazon.git'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    docker.build('mysite')
+                }
+            }
+        }
+
+        stage('Stop old container') {
+            steps {
+                sh '''
+                if [ $(sudo docker ps -q -f name=mysite) ]; then
+                    sudo docker stop mysite
+                    sudo docker rm mysite
+                fi
+                '''
+            }
+        }
+
+        stage('Run new container') {
+            steps {
+                sh 'sudo docker run -d -p 80:80 --name mysite mysite'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Deployment Successful!'
+        }
+        failure {
+            echo 'Deployment Failed!'
+        }
+    }
+}
